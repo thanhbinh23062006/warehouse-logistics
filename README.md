@@ -4,11 +4,9 @@
 
 ## Chạy online cho bạn bè
 
-Đã có cấu hình chạy giao diện và FastAPI trên Render. Xem [hướng dẫn deploy](DEPLOY.md). Cần push các thay đổi mới trước khi bấm nút:
+Đã có cấu hình **Vercel** cho cả FastAPI và giao diện. Xem [hướng dẫn deploy](DEPLOY.md), push các thay đổi mới rồi import repo tại https://vercel.com/new với **Root Directory = `dashboard`**, Framework **FastAPI**. Hiện chưa có URL đã triển khai được xác nhận.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fthanhbinh23062006%2Fwarehouse-logistics)
-
-Nút trên tạo dịch vụ trong tài khoản Render của bạn; hiện chưa có URL đã triển khai được xác nhận. GitHub Pages chỉ phục vụ giao diện tĩnh, không chạy model Python.
+API Tổng quan chỉ gửi dữ liệu tổng hợp (~10 KB thay vì ~18,9 MB), vẫn tính đủ 172.765 dòng. CSV batch tối đa 3 MB / 5.000 dòng. GitHub Pages không được dùng để chạy backend model Python.
 
 ## Chạy dự án
 
@@ -80,7 +78,7 @@ Từ thư mục `dashboard/`:
 .\.venv\Scripts\python.exe -m tools.verify_installed
 ```
 
-11 kiểm thử hợp đồng/snapshot đã đạt. Đã kiểm API với dữ liệu thật: Tổng quan, MAX cấp đơn, đổi ngưỡng và dự báo batch. Xem [hướng dẫn dashboard](dashboard/README.md) để đọc phương pháp đối soát và giới hạn đánh giá.
+13 kiểm thử Python và 2 kiểm tra JavaScript đã đạt. Đã kiểm API với dữ liệu thật: Tổng quan, MAX cấp đơn, đổi ngưỡng, payload nhỏ và dự báo batch. Chạy kiểm tra JS bằng `node tests/test_api_origin.js` và `node tests/test_overview_threshold.js` trong thư mục dashboard. Xem [hướng dẫn dashboard](dashboard/README.md) để đọc phương pháp đối soát và giới hạn đánh giá.
 
 ## File đưa lên GitHub
 

@@ -55,30 +55,32 @@ class PredictionData:
 
         if 'order_date' in frame:
             frame['month'] = pd.to_datetime(frame.order_date, errors='coerce').dt.strftime('%Y-%m')
-        test = frame[frame.tap_du_lieu.str.lower().eq('test')]
-        truth = test.is_late.to_numpy() if 'is_late' in frame and not test.empty and test.is_late.notna().all() else None
-        probabilities = test.xac_suat_tre.to_numpy() if truth is not None else None
         return {
+            'threshold': threshold,
             'source': 'delivery_predictions.csv', 'total': len(frame),
             'predicted_late_count': int(frame.late.sum()), 'predicted_late_rate': float(frame.late.mean()),
             'high_risk_orders': int(frame.loc[frame.xac_suat_tre >= .7, 'order_id'].nunique()),
             'histogram': [{'from': float(edges[i]), 'to': float(edges[i+1]), 'count': int(n)} for i, n in enumerate(counts)],
             'by_category': grouped('category_name'), 'by_region': grouped('order_region'),
             'by_month': grouped('month'),
-            # All probabilities allow local threshold updates without model calls.
-            'score_distribution': frame.xac_suat_tre.value_counts(sort=False).rename_axis('probability').reset_index(name='count').to_dict('records'),
             'top_orders': frame.sort_values('xac_suat_tre', ascending=False).head(20)[['order_item_id','order_id','xac_suat_tre']].to_dict('records'),
-            'group_scores': {key: self.group_scores(frame, col) for key, col in
-                             [('category', 'category_name'), ('region', 'order_region'), ('month', 'month')]},
-            'test_scores': [] if truth is None else [{'probability': float(p), 'is_late': int(y)} for p,y in zip(probabilities, truth)],
         }
 
-    @staticmethod
-    def group_scores(frame, column):
-        if column not in frame:
-            return []
-        return [{'name': str(name), 'scores': group.xac_suat_tre.tolist()}
-                for name, group in frame.groupby(column, dropna=False)]
+    def evaluation(self, threshold):
+        frame = self.require()
+        test = frame.loc[frame.tap_du_lieu.str.lower().eq('test')]
+        if test.empty or 'is_late' not in test or test.is_late.isna().any():
+            return {'available': False, 'threshold': threshold,
+                    'reason': 'Chưa có đủ nhãn thật của tập Test để tính confusion matrix.'}
+        truth = test.is_late.to_numpy().astype(int)
+        predicted = test.xac_suat_tre.to_numpy() >= threshold
+        return {'available': True, 'threshold': threshold, 'total': len(test),
+                'source': 'Nhãn thật và xác suất Test trong delivery_predictions.csv',
+                'confusion_matrix': {
+                    'tn': int(((truth == 0) & ~predicted).sum()),
+                    'fp': int(((truth == 0) & predicted).sum()),
+                    'fn': int(((truth == 1) & ~predicted).sum()),
+                    'tp': int(((truth == 1) & predicted).sum())}}
 
     def order(self, order_id, threshold):
         frame = self.require()

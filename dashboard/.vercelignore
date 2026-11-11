@@ -1,0 +1,12 @@
+.venv/
+venv/
+**/__pycache__/
+tests/
+tools/
+artifact-backup/
+.env
+.env.*
+*.parquet
+*.zip
+*.log
+build_pages.py

@@ -118,7 +118,7 @@ Response lỗi là `{"detail":"..."}` tiếng Việt. Model nạp một lần m�
 
 CSV chứa 7 cột dự đoán và metadata DataCo `category_name`, `order_region`, `order_date`, `is_late`. `is_late` là bản sao nhãn `late_delivery_risk` để đánh giá, không phải feature suy luận. Train/Validation/Test đều có trong CSV; điểm Train là in-sample. KPI toàn CSV không phải độ chính xác test độc lập.
 
-Thanh trượt dùng ngưỡng gốc từ Validation và cho phép [0,1]. Khi đổi ngưỡng, frontend tính lại nhãn, KPI, batch và confusion matrix từ xác suất có sẵn, không gọi lại model. Metrics báo cáo gốc giữ nguyên và ghi rõ nguồn test. Chưa có ngưỡng thì thanh trượt bị khóa.
+Thanh trượt dùng ngưỡng gốc từ Validation và cho phép [0,1]. Khi đổi ngưỡng, nhãn đơn và batch cập nhật tại trình duyệt; Tổng quan gọi API tổng hợp nhỏ, Model gọi `/api/evaluation` để tính confusion matrix từ xác suất đã lưu. Không gọi lại model. Metrics gốc giữ nguyên và ghi rõ nguồn test. Chưa có ngưỡng thì thanh trượt bị khóa. CSV batch giới hạn 3 MB / 5.000 dòng, kết quả một lượt tối đa 3,5 MB để phù hợp Vercel.
 
 Biểu đồ AUC theo tháng dùng các nhóm **tập test** có ít nhất 30 dòng và đủ hai lớp; không huấn luyện model mới. Đây không phải backtest theo thời gian hoặc chứng minh chất lượng tương lai. Feature importance lấy từ classifier; với Logistic là trị tuyệt đối hệ số chuẩn hóa tương đối, không phải tác động nhân quả.
 
@@ -154,8 +154,8 @@ Chạy `.venv\Scripts\python.exe -X utf8 -m unittest discover -s tests -v`; ki�
 2. **Batch:** tạo 100 dòng theo CSV mẫu, một dòng số lượng bằng 0; đủ 100 dòng kết quả, một lỗi có số dòng, xuất CSV giữ nguyên số dòng.
 3. **Đối soát:** tổng dòng bằng `len(df_model)` sau lọc; mở đơn nhiều item kiểm tra MAX; confusion matrix phải khớp nhãn test và ngưỡng; chatbot chỉ nêu đúng số liệu export.
 
-Kiểm thử dùng fixture tạm riêng, không đặt dữ liệu/model giả vào dashboard. **11/11 kiểm thử DataCo đạt**: bộ 9 kiểm thử hợp đồng và thêm kiểm tra lọc snapshot/tạo feature, chặn khóa trùng. Python compile và JavaScript syntax cũng đạt.
+Kiểm thử dùng fixture tạm riêng, không đặt dữ liệu/model giả vào dashboard. **13/13 kiểm thử Python đạt**, cùng 2 kiểm tra JavaScript. Có kiểm tra payload thật dưới giới hạn Vercel và xác nhận tổng hợp theo ngưỡng không gọi model. Python compile và JavaScript syntax cũng đạt.
 
 Đã kiểm API bằng **model DataCo thật** với các đầu vào kỹ thuật được sinh từ defaults: cả 4 shipping_mode dự báo thành công; thời gian một đơn tối đa 0,437 giây (gồm giải thích tùy chọn), batch 1.000 dòng 0,714 giây, không mất dòng, CSV xuất đủ 1.000 dòng. Chạy lại bằng `.venv\Scripts\python.exe -m tools.verify_installed`. Đây là phép đo trên máy hiện tại với các tình huống kỹ thuật, không phải kiểm định chất lượng trên tập test hoặc bảo đảm SLA trong mọi điều kiện.
 
-API trên dữ liệu thật đã kiểm: Tổng quan trả 200 với 172.765 dòng, 50 danh mục, 23 vùng, 37 tháng; lấy đủ 24.631 nhãn/xác suất Test để đổi confusion matrix; xác suất cấp đơn bằng MAX của item; tăng ngưỡng lên 0,9 giảm số dòng cảnh báo còn 26.513. Không thực thi notebook qua Google Cloud hoặc train lại model. Không có browser automation nên chưa xác minh bằng trình duyệt thực.
+API trên dữ liệu thật đã kiểm: Tổng quan trả 200 với 172.765 dòng, 50 danh mục, 23 vùng, 37 tháng; `/api/evaluation` tổng hợp đủ 24.631 nhãn/xác suất Test để đổi confusion matrix mà không gửi dữ liệu thô về trình duyệt; MAX cấp đơn đúng; tăng ngưỡng lên 0,9 giảm cảnh báo còn 26.513. Không train lại model. Chưa có browser automation hoặc deployment Vercel thực. Xem [DEPLOY.md](../DEPLOY.md).

@@ -1,54 +1,72 @@
-# Đưa dashboard online bằng Render
+# Triển khai DataCo dashboard lên Vercel
 
-Cấu hình này chạy frontend và FastAPI trên cùng một dịch vụ HTTPS. Bạn bè mở URL Render, không cần chạy Python, mở máy của chủ đồ án hoặc đăng nhập Google Cloud. Không dùng GitHub Pages cho backend.
+Frontend, FastAPI, model và CSV chạy chung một dự án Vercel. Bạn bè chỉ cần mở URL Production, không cần bật máy của chủ đồ án hoặc đăng nhập Google Cloud.
 
-## 1. Đẩy cấu hình mới lên GitHub
-
-Tại thư mục repo:
+## 1. Đẩy thay đổi lên GitHub
 
 ```powershell
+cd C:\Warehouse\warehouse-logistics
 git add .
-git commit -m "Prepare dashboard for Render deployment"
+git commit -m "Configure Vercel deployment and compact APIs"
 git push origin HEAD
 ```
 
-Các file model và `dashboard/data/delivery_predictions.csv` phải có trong repo. Backend health check chỉ thành công khi nạp được cả model và CSV.
+## 2. Import repo trên Vercel
 
-## 2. Tạo dịch vụ
+1. Mở https://vercel.com/new và đăng nhập bằng tài khoản có quyền đọc repo.
+2. Import `thanhbinh23062006/warehouse-logistics`.
+3. Đặt **Root Directory = `dashboard`**. Không chọn thư mục frontend và không để mặc định ở gốc repo.
+4. Chọn **Framework Preset = FastAPI** nếu chưa tự nhận diện.
+5. Giữ Build Command, Install Command và Output Directory theo mặc định, không điền `dist`, `npm run build` hoặc lệnh khởi động uvicorn.
+6. Nhấn **Deploy**.
 
-Mở [Deploy to Render](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fthanhbinh23062006%2Fwarehouse-logistics), đăng nhập/đăng ký Render, kết nối GitHub và cấp quyền đọc repo khi được yêu cầu.
+Vercel dùng `dashboard/app.py`, cài `dashboard/requirements.txt` (chỉ runtime web) và đọc `dashboard/vercel.json`. Phiên bản Python chọn từ `dashboard/.python-version`: 3.12. Không cần bật tính năng Large Functions để chạy cấu hình demo này.
 
-Render đọc `render.yaml` và hiển thị Blueprint có dịch vụ `dataco-dashboard`. Kiểm tra plan **Free**, sau đó xác nhận tạo/deploy. Nếu repo private, cài Render GitHub App và cho phép truy cập đúng repo. Nếu không dùng nút Deploy, chọn New → Blueprint rồi chọn repo này.
+Nếu ChatGPT đã có ứng dụng Vercel được cài và tài khoản của bạn đã liên kết, có thể tiếp tục triển khai bằng kết nối đó thay cho thao tác thủ công. Không có deployment online được xác nhận cho đến khi Vercel trả trạng thái Ready và URL thực.
 
-Không cần điền Gemini key để dùng dữ liệu, dự báo hoặc chat tri thức mặc định. Nếu muốn Gemini thật, thêm `GEMINI_API_KEY` và `GEMINI_MODEL` ở phần Environment trên Render; không commit khóa vào GitHub.
+## 3. Kiểm tra và chia sẻ
 
-## 3. Lấy link cho bạn bè
+Khi deployment ở trạng thái **Ready**:
 
-Đợi build và deploy thành công. Mở URL HTTPS do Render cấp ở trang dịch vụ (tên thực tế có thể có hậu tố), thử Tổng quan và Dự báo 1 đơn rồi chia sẻ URL đó.
+- Mở URL Production do Vercel cấp.
+- Kiểm `/api/health`: `status=ok`, `model_ready=true`, `data_ready=true`.
+- Tổng quan phải có 172.765 dòng, tỷ lệ dự báo trễ khoảng 34,91% tại ngưỡng gốc.
+- Dự báo một đơn: thử hai mẫu thực được lưu trong cấu hình.
+- Kéo ngưỡng trên Tổng quan/Model: KPI và confusion matrix cập nhật từ điểm số đã lưu, không gọi model.
+- Upload CSV mẫu để kiểm Batch, tải CSV kết quả, thử mở Chi tiết đơn.
+- Chia sẻ URL Production, kiểm tra bằng cửa sổ ẩn danh. Nếu dự án bật bảo vệ deployment thì điều chỉnh quyền truy cập phù hợp trước khi gửi link cho bạn bè.
 
-Kiểm tra `/api/health`: phải trả `status=ok`, `model_ready=true`, `data_ready=true`.
+## Các thay đổi để phù hợp Vercel
 
-**Chưa có dịch vụ cloud được tạo từ workspace này.** Cần chủ tài khoản đăng nhập Render và hoàn tất bước tạo dịch vụ. Không xem URL ví dụ là website đã deploy.
-
-## Cấu hình tương đương khi tạo Web Service thủ công
-
-| Trường | Giá trị |
+| Hạng mục | Cách xử lý |
 |---|---|
-| Runtime | Python |
-| Root Directory | dashboard |
-| Build Command | python -m pip install -r backend/requirements-web.txt |
-| Start Command | python -m uvicorn backend.app:app --host 0.0.0.0 --port $PORT --workers 1 |
-| Python version (Environment) | PYTHON_VERSION=3.12.10 |
-| Health Check Path | /api/health |
-| Plan | Free |
+| API Tổng quan cũ ~18,9 MB | Chỉ trả tổng hợp và top 20, hiện ~10 KB trên snapshot thật |
+| Confusion matrix | `/api/evaluation?t=...` trả 4 số đếm, không gửi toàn bộ nhãn Test |
+| Đổi ngưỡng | Debounce và bỏ response cũ; backend chỉ tổng hợp lại xác suất đã có |
+| CSV upload | Tối đa 3.000.000 byte và 5.000 dòng |
+| Kết quả batch | JSON được kiểm trước khi trả, tối đa 3.500.000 byte; yêu cầu chia file nếu quá lớn |
+| Thư viện | Runtime Logistic Regression, không kéo XGBoost/SHAP/BigQuery/Parquet vào function |
+| File bundle | Giữ model, config, CSV và frontend; loại `.venv`, tests, tools và backup |
+| API URL | `/api` cùng HTTPS origin, không gọi localhost trên máy bạn bè |
 
-`requirements-web.txt` chỉ cài thư viện cần cho pipeline Logistic Regression, CSV, API và chatbot. Không cài XGBoost, SHAP, Parquet hoặc BigQuery vào server demo vì không cần để suy luận model hiện tại. SHAP tùy chọn sẽ trả note khi thiếu thư viện; model vẫn dự báo bình thường. Nếu thay model sang XGBoost, cần cập nhật runtime requirements theo model mới.
+Vercel có giới hạn payload request/response 4,5 MB. Mức 3 MB và 3,5 MB của ứng dụng chừa khoảng trống cho multipart/JSON. Không giảm số dòng lịch sử hoặc lấy mẫu dữ liệu để đạt giới hạn; đủ 172.765 dòng vẫn được tổng hợp trên server. Model và các metrics gốc giữ nguyên.
 
-## Cập nhật và giới hạn
+## Chatbot và biến môi trường
 
-- Auto-deploy được tắt trong Blueprint. Sau khi push thay đổi, dùng Manual Deploy trên dịch vụ Render để triển khai bản mới.
-- Free service có giới hạn CPU/RAM/giờ sử dụng và có thể ngủ sau 15 phút không có truy cập. Lần truy cập sau có thể mất khoảng một phút để khởi động. Nếu gặp lỗi memory hoặc cần phục vụ ổn định, xem usage/log rồi cân nhắc plan phù hợp; repo này không tự nâng cấp plan.
-- Snapshot và model được đọc từ Git ở mỗi lần khởi động. Kết quả upload batch được trả về trình duyệt, không lưu lên ổ đĩa server nên không cần persistent disk cho demo.
-- Chỉ chạy một worker để tránh nhân đôi model/dữ liệu trong RAM. Không dùng `--reload` trên cloud.
+Không cần key để chạy thống kê, dự báo và chat tri thức có kiểm soát. Nếu muốn Gemini tạo sinh, thêm `GEMINI_API_KEY` và `GEMINI_MODEL` ở Settings → Environment Variables trên Vercel rồi redeploy. Không commit key hoặc `.env`.
 
-Tài liệu chính thức: [FastAPI trên Render](https://render.com/docs/deploy-fastapi), [Blueprint](https://render.com/docs/blueprint-spec), [Deploy button](https://render.com/docs/deploy-to-render), [Free service](https://render.com/docs/free).
+## Cập nhật
+
+Sau khi sửa code, push Git rồi kiểm deployment mới trong Vercel. Không ghi CSV hoặc model vào filesystem function khi chạy; chúng được nạp từ bundle mỗi cold start. Kết quả batch được tải về trình duyệt, không cần persistent storage.
+
+Khi gặp lỗi, gửi build log hoặc function log. `FUNCTION_RESPONSE_PAYLOAD_TOO_LARGE` cần kiểm endpoint nào vượt giới hạn; không đổi model để xử lý lỗi hosting. Nếu gặp lỗi thiếu model/CSV, kiểm Root Directory, file đã được Git theo dõi và `.vercelignore`.
+
+## Kiểm tra đã thực hiện tại local
+
+- 13 kiểm thử Python đạt, gồm kiểm tổng hợp không gọi `predict_proba`, giới hạn upload và kết quả batch.
+- 2 kiểm tra JavaScript đạt: API cùng origin và không ghi đè dữ liệu bằng response ngưỡng cũ.
+- Dùng chính ASGI entrypoint `app.py`: health 200, Tổng quan 172.765 dòng.
+- Tổng quan thực: 10.350 byte; confusion matrix: 199 byte; số cảnh báo và ma trận không đổi so với bản đã đối soát ở cùng ngưỡng.
+- Chưa xác minh build Linux, kích thước bundle thực hoặc URL online trên tài khoản Vercel; cần kết nối tài khoản hoặc import repo để thực hiện deployment thật.
+
+Tài liệu: [FastAPI trên Vercel](https://vercel.com/docs/frameworks/backend/fastapi), [Python runtime](https://vercel.com/docs/functions/runtimes/python), [giới hạn payload](https://vercel.com/kb/guide/how-to-bypass-vercel-body-size-limit-serverless-functions).

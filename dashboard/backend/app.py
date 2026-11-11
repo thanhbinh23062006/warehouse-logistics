@@ -19,6 +19,9 @@ from .predict import Predictor, REQUIRED, validate_input
 from .schema import FIELD_DEFINITIONS
 
 ROOT = Path(__file__).resolve().parents[1]
+MAX_UPLOAD_BYTES = 3_000_000
+MAX_RESPONSE_BYTES = 3_500_000
+MAX_BATCH_ROWS = 5000
 REFUSAL = 'Tôi là Trợ lý AI của đồ án DataCo. Tôi chỉ có thể hỗ trợ trả lời các câu hỏi liên quan đến số liệu, mô hình và dữ liệu của đồ án này.'
 
 
@@ -84,6 +87,7 @@ def model_info(request: Request):
             'top_features': config.get('feature_importance', [])[:10],
             'form_fields': config.get('form_fields') or FIELD_DEFINITIONS,
             'feature_names': p.names,
+            'limits': {'upload_bytes': MAX_UPLOAD_BYTES, 'batch_rows': MAX_BATCH_ROWS},
             'chat_generative_ready': bool(os.getenv('GEMINI_API_KEY') and os.getenv('GEMINI_MODEL'))}
 
 
@@ -99,6 +103,11 @@ def health(request: Request):
 @app.get('/api/overview')
 def overview(request: Request, t: float | None = Query(None)):
     return request.app.state.data.overview(threshold(t, request.app.state.predictor.config))
+
+
+@app.get('/api/evaluation')
+def evaluation(request: Request, t: float | None = Query(None)):
+    return request.app.state.data.evaluation(threshold(t, request.app.state.predictor.config))
 
 
 @app.post('/api/predict')
@@ -128,8 +137,8 @@ def batch_predict(text, predictor):
         raise RuntimeError(predictor.error)
     results, valid, indices = [], [], []
     for number, row in enumerate(reader, start=2):
-        if len(results) >= 10000:
-            raise ValueError('CSV tối đa 10.000 dòng.')
+        if len(results) >= MAX_BATCH_ROWS:
+            raise ValueError('CSV tối đa 5.000 dòng. Hãy chia nhỏ file.')
         record = {'line': number, 'order_item_id': row.get('order_item_id') or f'dong-{number}',
                   'order_id': row.get('order_id', ''), 'xac_suat_tre': None,
                   'du_doan_tre': None, 'error': ''}
@@ -175,14 +184,18 @@ def batch_predict(text, predictor):
 
 @app.post('/api/predict-batch')
 def predict_batch(request: Request, file: UploadFile = File(...)):
-    content = file.file.read(10 * 1024 * 1024 + 1)
-    if len(content) > 10 * 1024 * 1024:
-        raise HTTPException(413, 'CSV tối đa 10 MB.')
+    content = file.file.read(MAX_UPLOAD_BYTES + 1)
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, 'CSV tối đa 3 MB. Hãy chia nhỏ file.')
     try:
         text = content.decode('utf-8-sig')
     except UnicodeDecodeError:
         raise ValueError('Hãy lưu CSV bằng UTF-8.') from None
-    return batch_predict(text, request.app.state.predictor)
+    result = batch_predict(text, request.app.state.predictor)
+    encoded = json.dumps(result, ensure_ascii=False, separators=(',', ':'), allow_nan=False).encode('utf-8')
+    if len(encoded) > MAX_RESPONSE_BYTES:
+        raise HTTPException(413, 'Kết quả quá lớn cho một lượt tải. Hãy chia CSV thành các file nhỏ hơn.')
+    return Response(encoded, media_type='application/json')
 
 
 @app.get('/api/orders/{order_id}')
