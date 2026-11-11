@@ -1,0 +1,772 @@
+{
+  "dataset": "DataCo",
+  "model": "Logistic Regression",
+  "threshold": 0.7570708045852188,
+  "feature_count": 14,
+  "expected_rows": 172765,
+  "source_table": "warehouse-512516.gold.wide_order_items",
+  "source_expected_rows": 180519,
+  "target": "late_delivery_risk",
+  "metrics": {
+    "roc_auc": 0.7300687803248185,
+    "pr_auc": 0.827783635895693,
+    "accuracy": 0.6960334537777597,
+    "precision": 0.8847910080786793,
+    "recall": 0.5374822190611664,
+    "f1": 0.6687314720587585
+  },
+  "confusion_matrix": {
+    "tn": 9587,
+    "fp": 984,
+    "fn": 6503,
+    "tp": 7557
+  },
+  "metrics_source": "Tập Test khôi phục từ snapshot; khớp số dòng, nhóm, thống kê Train, metrics Validation và AUC Test trong artifacts",
+  "feature_defaults": {
+    "shipping_mode": "Standard Class",
+    "market": "LATAM",
+    "order_region": "Central America",
+    "order_country": "Estados Unidos",
+    "category_name": "Cleats",
+    "department_name": "Fan Shop",
+    "customer_segment": "Consumer",
+    "payment_type": "DEBIT",
+    "order_month": "T01",
+    "order_dayofweek": "Thu",
+    "order_item_quantity": 1.0,
+    "order_item_discount_rate": 0.090000004,
+    "log_order_item_total": 5.105884899338706,
+    "benefit_per_order": 31.65999985
+  },
+  "feature_importance": [
+    {
+      "feature": "shipping_mode",
+      "importance": 0.6703490023349009
+    },
+    {
+      "feature": "order_country",
+      "importance": 0.12443539106957549
+    },
+    {
+      "feature": "order_region",
+      "importance": 0.07272111525375945
+    },
+    {
+      "feature": "order_month",
+      "importance": 0.035404364099597074
+    },
+    {
+      "feature": "category_name",
+      "importance": 0.0280977742339042
+    },
+    {
+      "feature": "order_dayofweek",
+      "importance": 0.023030922496697727
+    },
+    {
+      "feature": "department_name",
+      "importance": 0.017650390311588198
+    },
+    {
+      "feature": "payment_type",
+      "importance": 0.010028233653239295
+    },
+    {
+      "feature": "market",
+      "importance": 0.00873878383511389
+    },
+    {
+      "feature": "customer_segment",
+      "importance": 0.0036677379471288037
+    },
+    {
+      "feature": "log_order_item_total",
+      "importance": 0.0027439365902933973
+    },
+    {
+      "feature": "benefit_per_order",
+      "importance": 0.0014867326350650044
+    },
+    {
+      "feature": "order_item_quantity",
+      "importance": 0.0014457968259778617
+    },
+    {
+      "feature": "order_item_discount_rate",
+      "importance": 0.0001998187131586739
+    }
+  ],
+  "form_fields": [
+    {
+      "name": "shipping_mode",
+      "label": "Phương thức vận chuyển",
+      "type": "select",
+      "required": true,
+      "default": "Standard Class",
+      "options": [
+        "First Class",
+        "Same Day",
+        "Second Class",
+        "Standard Class"
+      ]
+    },
+    {
+      "name": "market",
+      "label": "Thị trường",
+      "type": "select",
+      "default": "LATAM",
+      "options": [
+        "Africa",
+        "Europe",
+        "LATAM",
+        "Pacific Asia",
+        "USCA"
+      ]
+    },
+    {
+      "name": "order_region",
+      "label": "Khu vực giao hàng",
+      "type": "select",
+      "default": "Central America",
+      "options": [
+        "Canada",
+        "Caribbean",
+        "Central Africa",
+        "Central America",
+        "Central Asia",
+        "East Africa",
+        "East of USA",
+        "Eastern Asia",
+        "Eastern Europe",
+        "North Africa",
+        "Northern Europe",
+        "Oceania",
+        "South America",
+        "South Asia",
+        "South of USA",
+        "Southeast Asia",
+        "Southern Africa",
+        "Southern Europe",
+        "US Center",
+        "West Africa",
+        "West Asia",
+        "West of USA",
+        "Western Europe"
+      ]
+    },
+    {
+      "name": "order_country",
+      "label": "Quốc gia giao hàng",
+      "type": "select",
+      "default": "Estados Unidos",
+      "options": [
+        "Afganistán",
+        "Albania",
+        "Alemania",
+        "Angola",
+        "Arabia Saudí",
+        "Argelia",
+        "Argentina",
+        "Australia",
+        "Austria",
+        "Azerbaiyán",
+        "Bangladés",
+        "Barbados",
+        "Belice",
+        "Benín",
+        "Bielorrusia",
+        "Bolivia",
+        "Bosnia y Herzegovina",
+        "Botsuana",
+        "Brasil",
+        "Bulgaria",
+        "Burundi",
+        "Bután",
+        "Bélgica",
+        "Camboya",
+        "Camerún",
+        "Canada",
+        "Chad",
+        "Chile",
+        "China",
+        "Chipre",
+        "Colombia",
+        "Corea del Sur",
+        "Costa Rica",
+        "Costa de Marfil",
+        "Croacia",
+        "Cuba",
+        "Dinamarca",
+        "Ecuador",
+        "Egipto",
+        "El Salvador",
+        "Emiratos Árabes Unidos",
+        "Eritrea",
+        "Eslovaquia",
+        "Eslovenia",
+        "España",
+        "Estados Unidos",
+        "Estonia",
+        "Etiopía",
+        "Filipinas",
+        "Finlandia",
+        "Francia",
+        "Gabón",
+        "Georgia",
+        "Ghana",
+        "Grecia",
+        "Guadalupe",
+        "Guatemala",
+        "Guayana Francesa",
+        "Guinea",
+        "Guinea Ecuatorial",
+        "Guinea-Bissau",
+        "Guyana",
+        "Haití",
+        "Honduras",
+        "Hong Kong",
+        "Hungría",
+        "India",
+        "Indonesia",
+        "Irak",
+        "Irlanda",
+        "Irán",
+        "Israel",
+        "Italia",
+        "Jamaica",
+        "Japón",
+        "Jordania",
+        "Kazajistán",
+        "Kenia",
+        "Kirguistán",
+        "Kuwait",
+        "Laos",
+        "Lesoto",
+        "Liberia",
+        "Libia",
+        "Lituania",
+        "Luxemburgo",
+        "Líbano",
+        "Macedonia",
+        "Madagascar",
+        "Malasia",
+        "Mali",
+        "Marruecos",
+        "Martinica",
+        "Mauritania",
+        "Moldavia",
+        "Mongolia",
+        "Montenegro",
+        "Mozambique",
+        "Myanmar (Birmania)",
+        "México",
+        "Namibia",
+        "Nepal",
+        "Nicaragua",
+        "Nigeria",
+        "Noruega",
+        "Nueva Zelanda",
+        "Níger",
+        "Omán",
+        "Pakistán",
+        "Panamá",
+        "Papúa Nueva Guinea",
+        "Paraguay",
+        "Países Bajos",
+        "Perú",
+        "Polonia",
+        "Portugal",
+        "Qatar",
+        "Reino Unido",
+        "República Centroafricana",
+        "República Checa",
+        "República Democrática del Congo",
+        "República Dominicana",
+        "República de Gambia",
+        "República del Congo",
+        "Ruanda",
+        "Rumania",
+        "Rusia",
+        "Senegal",
+        "Sierra Leona",
+        "Singapur",
+        "Siria",
+        "Somalia",
+        "Sri Lanka",
+        "Suazilandia",
+        "SudAfrica",
+        "Sudán",
+        "Sudán del Sur",
+        "Suecia",
+        "Suiza",
+        "Surinam",
+        "Tailandia",
+        "Taiwán",
+        "Tanzania",
+        "Tayikistán",
+        "Togo",
+        "Trinidad y Tobago",
+        "Turkmenistán",
+        "Turquía",
+        "Túnez",
+        "Ucrania",
+        "Uganda",
+        "Uruguay",
+        "Uzbekistán",
+        "Venezuela",
+        "Vietnam",
+        "Yemen",
+        "Yibuti",
+        "Zambia",
+        "Zimbabue"
+      ]
+    },
+    {
+      "name": "category_name",
+      "label": "Danh mục sản phẩm",
+      "type": "select",
+      "default": "Cleats",
+      "options": [
+        "Accessories",
+        "As Seen on TV!",
+        "Baby",
+        "Baseball & Softball",
+        "Basketball",
+        "Books",
+        "Boxing & MMA",
+        "CDs",
+        "Cameras",
+        "Camping & Hiking",
+        "Cardio Equipment",
+        "Children's Clothing",
+        "Cleats",
+        "Computers",
+        "Consumer Electronics",
+        "Crafts",
+        "DVDs",
+        "Electronics",
+        "Fishing",
+        "Fitness Accessories",
+        "Garden",
+        "Girls' Apparel",
+        "Golf Apparel",
+        "Golf Bags & Carts",
+        "Golf Balls",
+        "Golf Gloves",
+        "Golf Shoes",
+        "Health and Beauty",
+        "Hockey",
+        "Hunting & Shooting",
+        "Indoor/Outdoor Games",
+        "Kids' Golf Clubs",
+        "Lacrosse",
+        "Men's Clothing",
+        "Men's Footwear",
+        "Men's Golf Clubs",
+        "Music",
+        "Pet Supplies",
+        "Shop By Sport",
+        "Soccer",
+        "Sporting Goods",
+        "Strength Training",
+        "Tennis & Racquet",
+        "Toys",
+        "Trade-In",
+        "Video Games",
+        "Water Sports",
+        "Women's Apparel",
+        "Women's Clothing",
+        "Women's Golf Clubs"
+      ]
+    },
+    {
+      "name": "department_name",
+      "label": "Ngành hàng",
+      "type": "select",
+      "default": "Fan Shop",
+      "options": [
+        "Apparel",
+        "Book Shop",
+        "Discs Shop",
+        "Fan Shop",
+        "Fitness",
+        "Footwear",
+        "Golf",
+        "Health and Beauty",
+        "Outdoors",
+        "Pet Shop",
+        "Technology"
+      ]
+    },
+    {
+      "name": "customer_segment",
+      "label": "Phân khúc khách hàng",
+      "type": "select",
+      "default": "Consumer",
+      "options": [
+        "Consumer",
+        "Corporate",
+        "Home Office"
+      ]
+    },
+    {
+      "name": "payment_type",
+      "label": "Phương thức thanh toán",
+      "type": "select",
+      "default": "DEBIT",
+      "options": [
+        "CASH",
+        "DEBIT",
+        "PAYMENT",
+        "TRANSFER"
+      ]
+    },
+    {
+      "name": "order_date",
+      "label": "Ngày đặt hàng",
+      "type": "date",
+      "required": true,
+      "default": null
+    },
+    {
+      "name": "order_item_quantity",
+      "label": "Số lượng sản phẩm",
+      "type": "number",
+      "required": true,
+      "integer": true,
+      "min": 1,
+      "default": 1.0
+    },
+    {
+      "name": "order_item_discount_rate",
+      "label": "Tỷ lệ giảm giá (0–1)",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0.090000004
+    },
+    {
+      "name": "order_item_total",
+      "label": "Giá trị dòng đơn sau giảm giá (USD)",
+      "type": "number",
+      "required": true,
+      "min": 0,
+      "default": 163.99000550000002
+    },
+    {
+      "name": "benefit_per_order",
+      "label": "Lợi nhuận dự kiến của dòng đơn (USD)",
+      "type": "number",
+      "default": 31.65999985
+    }
+  ],
+  "demo_inputs": {
+    "late": {
+      "shipping_mode": "Second Class",
+      "market": "Europe",
+      "order_region": "Southern Europe",
+      "order_country": "España",
+      "category_name": "Golf Shoes",
+      "department_name": "Outdoors",
+      "customer_segment": "Home Office",
+      "payment_type": "CASH",
+      "order_date": "2017-08-15",
+      "order_item_quantity": 2,
+      "order_item_discount_rate": 0.200000003,
+      "order_item_total": 128.0,
+      "benefit_per_order": 33.27999878
+    },
+    "on_time": {
+      "shipping_mode": "Standard Class",
+      "market": "Europe",
+      "order_region": "Southern Europe",
+      "order_country": "España",
+      "category_name": "Golf Shoes",
+      "department_name": "Outdoors",
+      "customer_segment": "Home Office",
+      "payment_type": "DEBIT",
+      "order_date": "2017-07-20",
+      "order_item_quantity": 5,
+      "order_item_discount_rate": 0.039999999,
+      "order_item_total": 384.0,
+      "benefit_per_order": -281.4700012
+    }
+  },
+  "notes": "Đã chấm snapshot DataCo bằng pipeline đã fit; không huấn luyện lại. Tổng quan gồm cả Train, Validation và Test; điểm Train là in-sample.",
+  "monitoring_auc": [
+    {
+      "period": "2015-01",
+      "auc": 0.7262402228651024,
+      "n": 733,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-02",
+      "auc": 0.7523299161230195,
+      "n": 644,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-03",
+      "auc": 0.7256588960986943,
+      "n": 707,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-04",
+      "auc": 0.748891063274625,
+      "n": 701,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-05",
+      "auc": 0.7896827955256117,
+      "n": 731,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-06",
+      "auc": 0.7258093016680802,
+      "n": 681,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-07",
+      "auc": 0.7349626934132468,
+      "n": 726,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-08",
+      "auc": 0.71027194797517,
+      "n": 738,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-09",
+      "auc": 0.7817382187219876,
+      "n": 715,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-10",
+      "auc": 0.7221918080923705,
+      "n": 709,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-11",
+      "auc": 0.7515204242273594,
+      "n": 703,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2015-12",
+      "auc": 0.7713768300399282,
+      "n": 742,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-01",
+      "auc": 0.7021971622945931,
+      "n": 751,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-02",
+      "auc": 0.6696849868929666,
+      "n": 672,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-03",
+      "auc": 0.7333416307543912,
+      "n": 721,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-04",
+      "auc": 0.6931127289625528,
+      "n": 672,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-05",
+      "auc": 0.702686672437562,
+      "n": 725,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-06",
+      "auc": 0.7632824427480916,
+      "n": 693,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-07",
+      "auc": 0.6913821677162745,
+      "n": 711,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-08",
+      "auc": 0.7720567537753433,
+      "n": 726,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-09",
+      "auc": 0.7621407085561498,
+      "n": 712,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-10",
+      "auc": 0.7342246334689662,
+      "n": 748,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-11",
+      "auc": 0.7059178645433928,
+      "n": 701,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2016-12",
+      "auc": 0.797656416664127,
+      "n": 732,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-01",
+      "auc": 0.7291545663638688,
+      "n": 730,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-02",
+      "auc": 0.7384216312787741,
+      "n": 690,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-03",
+      "auc": 0.7308188122332859,
+      "n": 748,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-04",
+      "auc": 0.6563224112184822,
+      "n": 693,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-05",
+      "auc": 0.6472331691297208,
+      "n": 710,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-06",
+      "auc": 0.7296381635091312,
+      "n": 699,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-07",
+      "auc": 0.7388770817364645,
+      "n": 706,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-08",
+      "auc": 0.7468023955700012,
+      "n": 738,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-09",
+      "auc": 0.7813601492846776,
+      "n": 657,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-10",
+      "auc": 0.786756993006993,
+      "n": 306,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-11",
+      "auc": 0.7580357142857144,
+      "n": 279,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2017-12",
+      "auc": 0.7314747941643797,
+      "n": 290,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    },
+    {
+      "period": "2018-01",
+      "auc": 0.7316534040671971,
+      "n": 291,
+      "source": "Nhóm Test theo tháng đặt hàng; không phải backtest tương lai"
+    }
+  ],
+  "encoded_feature_count": 124,
+  "importance_method": "abs(coef_) grouped and normalized",
+  "artifact_sha256": "64b47fefe210591d58a005383e1e8110c2a2e451019fa786e4b1efd2dc74909b",
+  "preprocessing_source": "Statistics and categories recovered from fitted pipeline",
+  "verified_runtime": {
+    "scikit-learn": "1.6.1",
+    "numpy": "2.5.4",
+    "pandas": "3.1.1"
+  },
+  "split_counts": {
+    "train": 123399,
+    "validation": 24735,
+    "test": 24631
+  },
+  "training_versions": {
+    "python": "3.13.18",
+    "sklearn": "1.6.1",
+    "xgboost": "3.4.1",
+    "pandas": "2.2.3",
+    "numpy": "2.4.6"
+  },
+  "reported_run": {
+    "ngay_chay": "2026-11-05 02:39:28",
+    "profile": "standard",
+    "random_state": 42
+  },
+  "results_sha256": "574f60158ee8b81ca2db9da463d8e99b8caa51ba220c486e46e130814f3bc293",
+  "validation_metrics": {
+    "roc_auc": 0.7377579213406873,
+    "pr_auc": 0.8331455547278008,
+    "accuracy": 0.6943197897715787,
+    "precision": 0.8896430661205383,
+    "recall": 0.5345991561181435,
+    "f1": 0.6678673402152427
+  },
+  "validation_metrics_source": "ket_qua_validation_nguong_toi_uu.csv · Validation, không phải Test",
+  "snapshot_verification": {
+    "checks": {
+      "split_counts_match": true,
+      "groups_disjoint": true,
+      "validation_metrics_match": true,
+      "test_auc_matches_report": true,
+      "train_imputer_statistics_match": true
+    },
+    "split_verified": true,
+    "snapshot_sha256": "9649f9470f362694d76e3f11cde4492721dfdc706c6c029d61373d968956b222",
+    "source_rows": 180519,
+    "cancelled_rows_removed": 7754,
+    "scored_rows": 172765,
+    "method": "Notebook StratifiedGroupKFold(7, shuffle=True, random_state=42); no model fitting"
+  },
+  "label_rate": 0.5728996035076549
+}

@@ -1,0 +1,15 @@
+Đồ án sử dụng DataCo Supply Chain, nguồn warehouse-512516.gold.wide_order_items.
+Nhãn late_delivery_risk; đơn hủy bị loại theo notebook trước khi huấn luyện.
+So sánh Logistic Regression, Random Forest, XGBoost; chọn theo AUC Validation.
+Ngưỡng Youden chọn trên Validation, không chọn theo Test. Không mặc định tên model hoặc metrics khi chưa export.
+Pipeline gồm điền thiếu, One-Hot cho biến phân loại; chuẩn hóa số cho Logistic.
+Đặc trưng gốc: shipping_mode, market, order_region, order_country, category_name,
+department_name, customer_segment, payment_type, order_month, order_dayofweek,
+order_item_quantity, order_item_discount_rate, log_order_item_total, benefit_per_order.
+scheduled_shipping_days chỉ dùng nếu notebook giữ lại; không cố định số cột sau One-Hot.
+order_month = T01..T12, order_dayofweek = Mon..Sun từ ngày đặt; log_order_item_total = log1p(max(order_item_total, 0)).
+Không dùng actual_shipping_days, shipping_delay_days, delivery_status, shipping_date,
+order_status, is_shipping_canceled hoặc mã định danh làm đầu vào dự báo.
+Xác suất cấp đơn bằng MAX xác suất các dòng. CSV bao gồm Train/Validation/Test;
+điểm trên Train là in-sample, khác kết quả test độc lập. Giám sát tháng là phân nhóm test, không phải đánh giá tương lai.
+Thông số và metrics chỉ từ model_config.json; tổng số và tỷ lệ dự đoán chỉ từ CSV đã nạp.

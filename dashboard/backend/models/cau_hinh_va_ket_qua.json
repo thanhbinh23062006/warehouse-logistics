@@ -1,0 +1,48 @@
+{
+  "ngay_chay": "2026-11-05 02:39:28",
+  "random_state": 42,
+  "profile": "standard",
+  "bang_nguon": "warehouse-512516.gold.wide_order_items",
+  "nhan": "late_delivery_risk",
+  "dac_trung_phan_loai": [
+    "shipping_mode",
+    "market",
+    "order_region",
+    "order_country",
+    "category_name",
+    "department_name",
+    "customer_segment",
+    "payment_type",
+    "order_month",
+    "order_dayofweek"
+  ],
+  "dac_trung_so": [
+    "order_item_quantity",
+    "order_item_discount_rate",
+    "log_order_item_total",
+    "benefit_per_order"
+  ],
+  "mo_hinh_duoc_chon": "Logistic Regression",
+  "nguong_toi_uu": {
+    "Logistic Regression": 0.7570708045852188,
+    "Random Forest": 0.5507357451183268,
+    "XGBoost": 0.5685157775878906
+  },
+  "so_dong": {
+    "train": 123399,
+    "validation": 24735,
+    "test": 24631
+  },
+  "auc_test": {
+    "Logistic Regression": 0.7300687803248185,
+    "Random Forest": 0.7323074360151965,
+    "XGBoost": 0.7326278898777393
+  },
+  "phien_ban": {
+    "python": "3.13.18",
+    "sklearn": "1.6.1",
+    "xgboost": "3.4.1",
+    "pandas": "2.2.3",
+    "numpy": "2.4.6"
+  }
+}

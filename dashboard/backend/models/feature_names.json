@@ -1,0 +1,16 @@
+[
+  "shipping_mode",
+  "market",
+  "order_region",
+  "order_country",
+  "category_name",
+  "department_name",
+  "customer_segment",
+  "payment_type",
+  "order_month",
+  "order_dayofweek",
+  "order_item_quantity",
+  "order_item_discount_rate",
+  "log_order_item_total",
+  "benefit_per_order"
+]
