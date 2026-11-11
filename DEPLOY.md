@@ -20,7 +20,7 @@ git push origin HEAD
 5. Giữ Build Command, Install Command và Output Directory theo mặc định, không điền `dist`, `npm run build` hoặc lệnh khởi động uvicorn.
 6. Nhấn **Deploy**.
 
-Vercel dùng `dashboard/app.py`, cài `dashboard/requirements.txt` (chỉ runtime web) và đọc `dashboard/vercel.json`. Phiên bản Python chọn từ `dashboard/.python-version`: 3.12. Không cần bật tính năng Large Functions để chạy cấu hình demo này.
+Vercel dùng `dashboard/app.py`, cài danh sách thư viện trực tiếp trong `dashboard/requirements.txt` và đọc `dashboard/vercel.json`. Không dùng dòng tham chiếu `-r` trong manifest này vì parser của Vercel đã từ chối nó khi triển khai. Phiên bản Python chọn từ `dashboard/.python-version`: 3.12. Không cần bật tính năng Large Functions để chạy cấu hình demo này.
 
 Nếu ChatGPT đã có ứng dụng Vercel được cài và tài khoản của bạn đã liên kết, có thể tiếp tục triển khai bằng kết nối đó thay cho thao tác thủ công. Không có deployment online được xác nhận cho đến khi Vercel trả trạng thái Ready và URL thực.
 
