@@ -87,6 +87,15 @@ def model_info(request: Request):
             'chat_generative_ready': bool(os.getenv('GEMINI_API_KEY') and os.getenv('GEMINI_MODEL'))}
 
 
+@app.get('/api/health')
+def health(request: Request):
+    model_ready = request.app.state.predictor.model is not None
+    data_ready = request.app.state.data.frame is not None
+    return JSONResponse(status_code=200 if model_ready and data_ready else 503,
+                        content={'status': 'ok' if model_ready and data_ready else 'not_ready',
+                                 'model_ready': model_ready, 'data_ready': data_ready})
+
+
 @app.get('/api/overview')
 def overview(request: Request, t: float | None = Query(None)):
     return request.app.state.data.overview(threshold(t, request.app.state.predictor.config))

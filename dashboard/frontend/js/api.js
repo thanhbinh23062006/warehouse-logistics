@@ -1,6 +1,7 @@
 'use strict';
 window.DataCo = (() => {
-  const base = location.port === '8000' ? '/api' : 'http://localhost:8000/api';
+  const localPreview = ['localhost', '127.0.0.1'].includes(location.hostname) && location.port === '5500';
+  const base = localPreview ? `${location.protocol}//${location.hostname}:8000/api` : '/api';
   const fmt = n => Number(n).toLocaleString('vi-VN');
   const percent = n => Number.isFinite(n) ? (n * 100).toLocaleString('vi-VN', {maximumFractionDigits:2}) + '%' : '—';
   const decimal = n => n == null ? '—' : Number(n).toFixed(4).replace('.', ',');

@@ -1,0 +1,11 @@
+# Runtime only for the fitted Logistic Regression pipeline and pre-scored CSV.
+# The full requirements.txt remains available for notebook/export/SHAP tools.
+fastapi==0.162.4
+uvicorn==0.54.0
+python-multipart==0.0.33
+joblib==1.6.0
+numpy==2.5.4
+pandas==3.1.1
+scipy==1.18.1
+scikit-learn==1.6.1
+httpx==0.28.1

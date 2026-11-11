@@ -2,6 +2,14 @@
 
 Đồ án Data Warehouse và Machine Learning dự báo giao hàng trễ trên bộ dữ liệu **DataCo Supply Chain**. Dashboard sử dụng pipeline Logistic Regression đã huấn luyện, không train lại khi chạy web.
 
+## Chạy online cho bạn bè
+
+Đã có cấu hình chạy giao diện và FastAPI trên Render. Xem [hướng dẫn deploy](DEPLOY.md). Cần push các thay đổi mới trước khi bấm nút:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fthanhbinh23062006%2Fwarehouse-logistics)
+
+Nút trên tạo dịch vụ trong tài khoản Render của bạn; hiện chưa có URL đã triển khai được xác nhận. GitHub Pages chỉ phục vụ giao diện tĩnh, không chạy model Python.
+
 ## Chạy dự án
 
 Cần Python 3.12 và kết nối mạng trong lần cài thư viện đầu tiên.
