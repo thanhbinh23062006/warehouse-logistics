@@ -5,7 +5,7 @@
  O.chart(id,key==='by_month'?'line':'bar',sorted.map(x=>x.name),[{label:'Tỷ lệ trễ dự báo (%)',data:sorted.map(x=>x.rate*100),backgroundColor:'#267d67',borderColor:'#267d67',borderRadius:5,tension:.3}]);}
  function render(){if(!data)return;
  O.$('total').textContent=O.fmt(data.total);O.$('lateRate').textContent=O.percent(data.predicted_late_rate);O.$('highRisk').textContent=O.fmt(data.high_risk_orders);O.$('recall').textContent=O.decimal(O.config.metrics.recall);
- O.$('datasetNote').textContent=`Nguồn: delivery_predictions.csv · ${O.fmt(data.total)} dòng đã nạp. ${data.total===O.config.expected_rows?'Khớp số dòng sau lọc trong notebook.':'Số dòng tham chiếu: '+O.fmt(O.config.expected_rows)+'.'} Ngưỡng đã áp dụng ${O.decimal(data.threshold)}. Rủi ro cao tính theo order_id duy nhất, xác suất ≥ 70%.`;
+
  O.chart('histogram','bar',data.histogram.map(b=>`${Math.round(b.from*100)}–${Math.round(b.to*100)}%`),[{label:'Số dòng',data:data.histogram.map(b=>b.count),backgroundColor:data.histogram.map(b=>b.from>=data.threshold?'#d9a255':'#287e68'),borderRadius:4}]);
  grouped('by_category','categoryChart');grouped('by_month','monthChart');grouped('by_region','regionChart');
  O.$('topRows').innerHTML=data.top_orders.map(r=>`<tr><td><a href="order.html?id=${encodeURIComponent(r.order_id)}">${O.esc(r.order_id)}</a></td><td>${O.esc(r.order_item_id)}</td><td>${O.probability(r.xac_suat_tre)}</td><td>${O.label(r.xac_suat_tre)}</td><td><a href="order.html?id=${encodeURIComponent(r.order_id)}">Xem chi tiết ↗</a></td></tr>`).join('');
@@ -16,6 +16,6 @@
   finally{if(request===sequence)O.$('reloadOverview').disabled=false;}
  }
  window.addEventListener('datacoready',load);
- window.addEventListener('thresholdchange',()=>{++sequence;clearTimeout(timer);O.$('datasetNote').textContent='Đang cập nhật thống kê từ các xác suất đã lưu…';timer=setTimeout(load,180);});
+ window.addEventListener('thresholdchange',()=>{++sequence;clearTimeout(timer);timer=setTimeout(load,180);});
  O.$('reloadOverview')?.addEventListener('click',load);
 })();
