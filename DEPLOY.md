@@ -53,7 +53,7 @@ Vercel có giới hạn payload request/response 4,5 MB. Mức 3 MB và 3,5 MB c
 
 ## Chatbot và biến môi trường
 
-Không cần key để chạy thống kê, dự báo và chat tri thức có kiểm soát. Nếu muốn Gemini tạo sinh, thêm `GEMINI_API_KEY` và `GEMINI_MODEL` ở Settings → Environment Variables trên Vercel rồi redeploy. Không commit key hoặc `.env`.
+Không cần key để chạy thống kê, dự báo và chat tri thức có kiểm soát. Nếu muốn Gemini tạo sinh, thêm `GEMINI_API_KEY` và `GEMINI_MODEL` ở Settings → Environment Variables trên Vercel rồi redeploy. Không commit key hoặc `.env`. Xem [hướng dẫn trợ lý AI](AI_SETUP.md) để cấu hình và bổ sung tài liệu đồ án.
 
 ## Cập nhật
 

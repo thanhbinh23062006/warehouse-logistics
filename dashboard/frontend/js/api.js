@@ -26,7 +26,18 @@ window.DataCo = (() => {
   function chart(id, type, labels, datasets, options={}) {
     if(!window.Chart){const c=$(id);if(c)c.parentElement.textContent='Chưa tải được Chart.js. Kiểm tra kết nối mạng.';return;}
     if(charts[id])charts[id].destroy();
-    charts[id]=new Chart($(id), {type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#748497'}},y:{beginAtZero:true,grid:{color:'#edf1ef'},ticks:{font:{size:10},color:'#748497'}}},...options}});
+    const barLabels={id:'barValues',afterDatasetsDraw(chart){
+      if(type!=='bar')return;
+      const ctx=chart.ctx;ctx.save();ctx.fillStyle='#365267';ctx.font='600 10px sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
+      chart.data.datasets.forEach((dataset,index)=>{if(!chart.isDatasetVisible(index))return;
+        chart.getDatasetMeta(index).data.forEach((bar,i)=>{const value=dataset.data[i];if(value==null||!Number.isFinite(Number(value)))return;
+          const suffix=dataset.label?.includes('(%)')?'%':'';
+          const text=Number(value).toLocaleString('vi-VN',{maximumFractionDigits:suffix?1:0})+suffix;
+          const position=bar.tooltipPosition();ctx.fillText(text,position.x,Math.max(chart.chartArea.top+13,position.y-6));
+        });
+      });ctx.restore();
+    }};
+    charts[id]=new Chart($(id), {type,data:{labels,datasets},plugins:[barLabels],options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:type==='bar'?20:0}},plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#748497'}},y:{beginAtZero:true,grace:type==='bar'?'15%':0,grid:{color:'#edf1ef'},ticks:{font:{size:10},color:'#748497'}}},...options}});
   }
   function thresholdControl(){
     const input=$('threshold');if(!input)return;
@@ -35,13 +46,15 @@ window.DataCo = (() => {
     $('resetThreshold').onclick=()=>{t=config.threshold;input.value=t;sessionStorage.setItem('dataco-threshold',String(t));$('thresholdValue').textContent=decimal(t);window.dispatchEvent(new CustomEvent('thresholdchange',{detail:t}));};
   }
   function initChat(){
-    const toggle=$('chatToggle'), drawer=$('chatDrawer'),input=$('chatInput');let busy=false,history=[];
+    const toggle=$('chatToggle'), drawer=$('chatDrawer'),input=$('chatInput');let busy=false,history=[],predictionInput=null;
+    window.addEventListener('predictionready',event=>{predictionInput=event.detail.input;});
+    api('/chat-status').then(state=>{const label=$('chatState');if(label)label.textContent=state.configured?'Gemini đã cấu hình · theo dữ liệu đồ án':'Trợ lý tri thức · chưa cấu hình Gemini';}).catch(()=>{});
     function close(){drawer.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.focus();}
     toggle.onclick=()=>{drawer.hidden=!drawer.hidden;toggle.setAttribute('aria-expanded',String(!drawer.hidden));if(!drawer.hidden)input.focus();};
     $('chatClose').onclick=close;document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!drawer.hidden)close();});
     function message(text,role,sources=''){const div=document.createElement('div');div.className='message '+role;div.textContent=text;if(sources){const small=document.createElement('small');small.textContent=sources;div.append(small);}$('chatMessages').append(div);div.scrollIntoView({block:'nearest'});return div;}
     async function send(text){if(busy||!text.trim())return;busy=true;input.value='';message(text,'user');const loading=message('Đang tra cứu tri thức đồ án…','ai');$('chatSend').disabled=true;
-      try{const data=await post('/chat',{message:text,history:history.slice(-16)});loading.remove();message(data.reply,'ai',data.mode+' · Nguồn: '+(data.sources.join(', ')||'Quy tắc phạm vi'));history.push({role:'user',content:text},{role:'assistant',content:data.reply});}catch(e){loading.textContent=e.message;}finally{busy=false;$('chatSend').disabled=false;}}
+      try{const data=await post('/chat',{message:text,history:history.slice(-6),threshold:t,order_id:new URLSearchParams(location.search).get('id'),prediction_input:predictionInput});loading.remove();message(data.reply,'ai',data.mode+' · Nguồn: '+(data.sources.join(', ')||'Quy tắc phạm vi')+(data.notice?' · '+data.notice:''));history.push({role:'user',content:text},{role:'assistant',content:data.reply});}catch(e){loading.textContent=e.message;}finally{busy=false;$('chatSend').disabled=false;}}
     $('chatForm').onsubmit=e=>{e.preventDefault();send(input.value);};document.querySelectorAll('[data-question]').forEach(b=>b.onclick=()=>send(b.textContent));
   }
   async function init(){

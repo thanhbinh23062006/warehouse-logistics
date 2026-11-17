@@ -137,14 +137,14 @@ Bảng mặc định `warehouse-512516.gold.ml_late_delivery_predictions`. Bản
 
 Widget có trên cả 5 trang, trả lời tiếng Việt và ghi nguồn. Khi chưa có cấu hình/CSV thật, chatbot nói rõ chưa có số liệu. Không đọc số liệu Olist. Câu hỏi ngoài đồ án (dịch, thời tiết, cổ phiếu) bị từ chối.
 
-Tùy chọn gọi Gemini cho giải thích khái niệm:
+Tùy chọn gọi Gemini để trả lời dựa trên dữ liệu, kết quả mô hình và lịch sử trò chuyện:
 
 ```powershell
 $env:GEMINI_API_KEY = "YOUR_KEY"
-$env:GEMINI_MODEL = "YOUR_ENABLED_MODEL_ID"
+$env:GEMINI_MODEL = "gemini-3.8-flash"
 ```
 
-Khóa chỉ ở backend. Câu định lượng dùng số liệu kiểm chứng trực tiếp; request LLM có timeout và fallback về tri thức nếu lỗi/chậm/sai token số. Không cam kết prompt sẽ bảo đảm đúng 100%. Chưa có khóa nên chưa thử LLM thật.
+Khóa chỉ ở backend. Câu định lượng được đối chiếu với số liệu server tính; request LLM có timeout và fallback về tri thức nếu lỗi/chậm/sai nguồn hoặc số liệu. Không cam kết prompt sẽ bảo đảm đúng 100%. Chưa có khóa nên chưa thử LLM thật. Xem [hướng dẫn cấu hình trên Vercel](../AI_SETUP.md).
 
 ## Kiểm tra và 3 ca demo
 
