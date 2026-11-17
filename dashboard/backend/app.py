@@ -272,9 +272,17 @@ async def chat(request: Request, payload: dict):
     return public_response(result, request.app.state.predictor.config)
 
 
-@app.get('/')
-def root():
-    return RedirectResponse('/frontend/index.html')
+@app.get('/index.html')
+def home_alias():
+    return RedirectResponse('/', status_code=308)
 
 
-app.mount('/frontend', StaticFiles(directory=ROOT / 'frontend', html=True), name='frontend')
+@app.get('/frontend/{path:path}')
+def legacy_frontend(path: str, request: Request):
+    target = '/' if path in ('', 'index.html') else '/' + path.lstrip('/')
+    if request.url.query:
+        target += '?' + request.url.query
+    return RedirectResponse(target, status_code=308)
+
+
+app.mount('/', StaticFiles(directory=ROOT / 'frontend', html=True), name='frontend')

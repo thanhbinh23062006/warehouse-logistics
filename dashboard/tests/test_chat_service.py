@@ -17,6 +17,13 @@ CONFIG = json.loads((ROOT/'backend/models/model_config.json').read_text(encoding
 
 
 class ChatTests(unittest.IsolatedAsyncioTestCase):
+    async def test_histogram_question_without_key_matches_dashboard(self):
+        result, client = await self.call({'message': 'phân bố xác suất giao trễ ở khoảng nào là cao nhất'}, env={'GEMINI_API_KEY': ''})
+        bucket = max(self.data.overview(CONFIG['threshold'])['histogram'], key=lambda row: row['count'])
+        self.assertIn(f'{bucket["count"]:,}', result['reply'])
+        self.assertIn(f'{bucket["from"]:.0%}–{bucket["to"]:.0%}', result['reply'])
+        client.post.assert_not_called()
+
     def test_public_reply_uses_business_names_and_preserves_values(self):
         result = public_response({'reply': 'delivery_predictions.csv: order_id 123, order_region; model_tot_nhat.joblib; ROC-AUC 0.73.',
                                   'sources': ['delivery_predictions.csv', 'model_config.json', 'knowledge_context.txt']}, CONFIG)

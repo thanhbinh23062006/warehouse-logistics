@@ -54,7 +54,7 @@ window.DataCo = (() => {
     $('chatClose').onclick=close;document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!drawer.hidden)close();});
     function message(text,role,sources=''){const div=document.createElement('div');div.className='message '+role;div.textContent=text;if(sources){const small=document.createElement('small');small.textContent=sources;div.append(small);}$('chatMessages').append(div);div.scrollIntoView({block:'nearest'});return div;}
     async function send(text){if(busy||!text.trim())return;busy=true;input.value='';message(text,'user');const loading=message('Đang tra cứu tri thức đồ án…','ai');$('chatSend').disabled=true;
-      try{const data=await post('/chat',{message:text,history:history.slice(-6),threshold:t,order_id:new URLSearchParams(location.search).get('id'),prediction_input:predictionInput});loading.remove();message(data.reply,'ai',data.mode+' · Nguồn: '+(data.sources.join(', ')||'Quy tắc phạm vi')+(data.notice?' · '+data.notice:''));history.push({role:'user',content:text},{role:'assistant',content:data.reply});}catch(e){loading.textContent=e.message;}finally{busy=false;$('chatSend').disabled=false;}}
+      try{const data=await post('/chat',{message:text,history:history.slice(-6),threshold:t,order_id:new URLSearchParams(location.search).get('id'),prediction_input:predictionInput});loading.remove();message(data.reply,'ai');history.push({role:'user',content:text},{role:'assistant',content:data.reply});}catch(e){loading.textContent=e.message;}finally{busy=false;$('chatSend').disabled=false;}}
     $('chatForm').onsubmit=e=>{e.preventDefault();send(input.value);};document.querySelectorAll('[data-question]').forEach(b=>b.onclick=()=>send(b.textContent));
   }
   async function init(){

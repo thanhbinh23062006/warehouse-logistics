@@ -137,6 +137,14 @@ class ContractTests(unittest.TestCase):
 
     def test_pages_cors_and_missing_artifacts(self):
         with tempfile.TemporaryDirectory() as directory, TestClient(app) as client:
+            home = client.get('/', follow_redirects=False)
+            self.assertEqual(home.status_code, 200)
+            self.assertIn('Tổng quan', home.text)
+            legacy = client.get('/frontend/index.html', follow_redirects=False)
+            self.assertEqual(legacy.headers['location'], '/')
+            order = client.get('/frontend/order.html?id=123', follow_redirects=False)
+            self.assertEqual(order.headers['location'], '/order.html?id=123')
+            self.assertEqual(client.get('/js/api.js').status_code, 200)
             config={**CONFIG,'threshold':None}
             (Path(directory)/'model_config.json').write_text(json.dumps(config),encoding='utf-8')
             unavailable=Predictor(directory)

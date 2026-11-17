@@ -1,5 +1,6 @@
 """Gemini chat grounded in trusted project artifacts and server-computed statistics."""
 import json
+import logging
 import math
 import os
 import re
@@ -64,6 +65,46 @@ def validate_history(history):
     return valid
 
 
+def dashboard_answer(message, data, threshold):
+    """Answer chart questions directly from the same aggregates as the dashboard."""
+    import unicodedata
+    q = ''.join(c for c in unicodedata.normalize('NFD', message.lower().replace('đ', 'd'))
+                if unicodedata.category(c) != 'Mn')
+    if q.strip(' .!?') in ('xin chao', 'chao', 'hello', 'hi'):
+        return ('Xin chào! Bạn muốn xem phân bố xác suất giao trễ, khu vực rủi ro cao hay kết quả mô hình?', [] )
+    histogram = any(word in q for word in ['phan bo', 'khoang xac suat', 'xac suat giao tre', 'xac suat tre'])
+    group = next(((key, label) for words, key, label in [
+        (['danh muc', 'san pham'], 'by_category', 'Danh mục'),
+        (['khu vuc', 'vung'], 'by_region', 'Khu vực'),
+        (['theo thang', 'thang nao'], 'by_month', 'Tháng')]
+        if any(word in q for word in words)), None)
+    if not histogram and not group:
+        return None
+    if data.frame is None or threshold is None:
+        return 'Chưa có đủ dữ liệu để đọc biểu đồ.', []
+    summary = data.overview(threshold)
+    if group:
+        key, label = group
+        rows = summary[key].get('rows', [])
+        if not rows:
+            return f'Chưa có dữ liệu phân tích theo {label.lower()}.', []
+        lowest = any(word in q for word in ['thap nhat', 'it nhat'])
+        value = min(r['rate'] for r in rows) if lowest else max(r['rate'] for r in rows)
+        selected = [r for r in rows if r['rate'] == value]
+        names = ', '.join(r['name'] for r in selected)
+        return (f'{label} có tỷ lệ dự báo giao trễ {"thấp" if lowest else "cao"} nhất là {names}: '
+                f'{value:.2%}, tại ngưỡng đang chọn {threshold:.4f}.'), ['delivery_predictions.csv']
+    bins = summary['histogram']
+    maximum = max(b['count'] for b in bins)
+    selected = [b for b in bins if b['count'] == maximum]
+    intervals = ', '.join(f'{b["from"]:.0%}–{b["to"]:.0%}' for b in selected)
+    total = summary['total']
+    share = maximum / total if total else 0
+    return (f'Khoảng xác suất giao trễ có nhiều dòng đơn hàng nhất là {intervals}, '
+            f'với {maximum:,} dòng, chiếm {share:.2%} tổng số dòng. '
+            'Đây là khoảng tập trung nhiều dự đoán nhất, không phải khoảng có xác suất trễ cao nhất.'), ['delivery_predictions.csv']
+
+
 def build_knowledge(config, data, root, threshold, order_id=None, prediction=None):
     facts = {}
     sources = {'model_config.json': {'model': config.get('model'), 'features': list(config.get('feature_defaults', {})),
@@ -118,6 +159,8 @@ def build_knowledge(config, data, root, threshold, order_id=None, prediction=Non
             'date_range': [str(data.frame.order_date.min()), str(data.frame.order_date.max())] if 'order_date' in data.frame else [],
         }
         add('data.total', 'Tổng số dòng đã chấm điểm', summary['total'], 'integer')
+        for i, bucket in enumerate(summary['histogram']):
+            add(f'histogram.{i}.count', f'Số dòng có xác suất trễ {bucket["from"]:.0%}–{bucket["to"]:.0%}', bucket['count'], 'integer')
         add('data.orders', 'Số order_id duy nhất', data.frame.order_id.nunique(), 'integer')
         add('data.predicted_late', 'Số dòng dự đoán trễ tại ngưỡng đang chọn', summary['predicted_late_count'], 'integer')
         add('data.predicted_late_rate', 'Tỷ lệ trễ dự báo tại ngưỡng đang chọn', summary['predicted_late_rate'], 'percent')
@@ -188,8 +231,12 @@ async def answer_chat(payload, predictor, data, root, fallback, refusal):
         active = config.get('threshold')
     if active is not None and (type(active) not in (int, float) or not math.isfinite(active) or not 0 <= active <= 1):
         raise ValueError('Ngưỡng trò chuyện phải nằm trong khoảng 0–1.')
-    baseline, baseline_sources = fallback(message, config, data)
+    fallback_config = {**config, 'threshold': active}
+    direct = dashboard_answer(message, data, active)
+    baseline, baseline_sources = direct if direct else fallback(message, fallback_config, data)
     fallback_result = {'reply': baseline, 'sources': baseline_sources, 'mode': 'Tri thức đồ án · dự phòng'}
+    if direct and not direct[1]:
+        return fallback_result
     key, model = settings()
     if not key or not model:
         return {**fallback_result, 'notice': 'Chưa cấu hình Gemini API key trên server.'}
@@ -244,9 +291,13 @@ async def answer_chat(payload, predictor, data, root, fallback, refusal):
             return {'reply': reply, 'sources': citations, 'mode': 'Gemini · dữ liệu đồ án'}
     except httpx.HTTPStatusError as exc:
         code = exc.response.status_code
-        notice = {401: 'Gemini API key chưa hợp lệ.', 403: 'Gemini API key chưa có quyền truy cập.',
+        # Log only status and model; never log upstream bodies, headers or API keys.
+        logging.getLogger(__name__).warning('Gemini request failed: HTTP %s; model=%s', code, model)
+        notice = {400: 'Gemini từ chối yêu cầu. Kiểm tra API key, model và cấu hình dự án.',
+                  401: 'Gemini API key chưa hợp lệ.', 403: 'Gemini API key chưa có quyền truy cập.',
                   404: 'Không tìm thấy Gemini model; kiểm tra GEMINI_MODEL.',
                   429: 'Gemini đang hết quota hoặc quá nhiều yêu cầu.'}.get(code, 'Dịch vụ Gemini chưa phản hồi thành công.')
+        return {**fallback_result, 'notice': notice, 'error_code': f'GEMINI_HTTP_{code}'}
     except httpx.TimeoutException:
         notice = 'Gemini trả lời quá thời gian chờ; đang dùng tri thức dự phòng.'
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
