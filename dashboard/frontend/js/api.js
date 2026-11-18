@@ -48,7 +48,6 @@ window.DataCo = (() => {
   function initChat(){
     const toggle=$('chatToggle'), drawer=$('chatDrawer'),input=$('chatInput');let busy=false,history=[],predictionInput=null;
     window.addEventListener('predictionready',event=>{predictionInput=event.detail.input;});
-    api('/chat-status').then(state=>{const label=$('chatState');if(label)label.textContent=state.configured?'Gemini đã cấu hình · theo dữ liệu đồ án':'Trợ lý tri thức · chưa cấu hình Gemini';}).catch(()=>{});
     function close(){drawer.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.focus();}
     toggle.onclick=()=>{drawer.hidden=!drawer.hidden;toggle.setAttribute('aria-expanded',String(!drawer.hidden));if(!drawer.hidden)input.focus();};
     $('chatClose').onclick=close;document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!drawer.hidden)close();});

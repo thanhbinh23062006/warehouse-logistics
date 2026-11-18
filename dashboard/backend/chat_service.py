@@ -1,5 +1,6 @@
 """Gemini chat grounded in trusted project artifacts and server-computed statistics."""
 import json
+import asyncio
 import logging
 import math
 import os
@@ -72,6 +73,11 @@ def dashboard_answer(message, data, threshold):
                 if unicodedata.category(c) != 'Mn')
     if q.strip(' .!?') in ('xin chao', 'chao', 'hello', 'hi'):
         return ('Xin chào! Bạn muốn xem phân bố xác suất giao trễ, khu vực rủi ro cao hay kết quả mô hình?', [] )
+    if any(term in q for term in ('don le', 'mot don', '1 don')) and any(term in q for term in ('la gi', 'the nao', 'cach', 'huong dan')):
+        return ('Dự báo đơn lẻ là ước tính nguy cơ giao hàng trễ cho một đơn hàng bạn nhập. '
+                'Bạn mở mục Dự báo 1 đơn, điền thông tin đã biết trước khi giao hàng rồi bấm Dự báo xác suất. '
+                'Kết quả gồm xác suất giao trễ và phân loại trễ hoặc không trễ theo ngưỡng đang chọn. '
+                'Đây là dự đoán rủi ro, không phải xác nhận đơn chắc chắn giao trễ.'), ['knowledge_context.txt']
     if any(term in q for term in ('hang loat', 'nhieu don', 'batch prediction')):
         return ('Dự báo hàng loạt là dự đoán nguy cơ giao trễ cho nhiều đơn hàng cùng lúc. '
                 'Bạn mở mục Dự báo hàng loạt, tải tệp mẫu, điền thông tin đơn hàng rồi chọn tệp và bấm Chạy dự báo. '
@@ -244,7 +250,7 @@ async def answer_chat(payload, predictor, data, root, fallback, refusal):
     if baseline == refusal:
         baseline = 'Hiện tôi chưa kết nối được dịch vụ AI để trả lời câu hỏi này. Bạn vui lòng thử lại sau.'
     fallback_result = {'reply': baseline, 'sources': baseline_sources, 'mode': 'Tri thức đồ án · dự phòng'}
-    if direct and not direct[1]:
+    if direct and (not direct[1] or direct[1] == ['knowledge_context.txt']):
         return fallback_result
     key, model = settings()
     if not key or not model:
@@ -292,10 +298,15 @@ async def answer_chat(payload, predictor, data, root, fallback, refusal):
               'required': ['in_scope', 'reply', 'sources']}
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(20, connect=5)) as client:
-            response = await client.post(f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
-                headers={'x-goog-api-key': key}, json={'systemInstruction': {'parts': [{'text': system}]},
+            request_body = {'systemInstruction': {'parts': [{'text': system}]},
                 'contents': contents, 'generationConfig': {'maxOutputTokens': 2048,
-                    'responseMimeType': 'application/json', 'responseJsonSchema': schema}})
+                    'responseMimeType': 'application/json', 'responseJsonSchema': schema}}
+            response = await client.post(f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
+                headers={'x-goog-api-key': key}, json=request_body)
+            if response.status_code in (502, 503, 504):
+                await asyncio.sleep(0.5)
+                response = await client.post(f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
+                    headers={'x-goog-api-key': key}, json=request_body, timeout=10)
             response.raise_for_status()
             parts = response.json()['candidates'][0]['content']['parts']
             text = ''.join(part.get('text', '') for part in parts if not part.get('thought'))
@@ -310,6 +321,7 @@ async def answer_chat(payload, predictor, data, root, fallback, refusal):
         notice = {400: 'Gemini từ chối yêu cầu. Kiểm tra API key, model và cấu hình dự án.',
                   401: 'Gemini API key chưa hợp lệ.', 403: 'Gemini API key chưa có quyền truy cập.',
                   404: 'Không tìm thấy Gemini model; kiểm tra GEMINI_MODEL.',
+                  503: 'Gemini đang tạm thời không phục vụ được yêu cầu. Vui lòng thử lại sau.',
                   429: 'Gemini đang hết quota hoặc quá nhiều yêu cầu.'}.get(code, 'Dịch vụ Gemini chưa phản hồi thành công.')
         return {**fallback_result, 'notice': notice, 'error_code': f'GEMINI_HTTP_{code}'}
     except httpx.TimeoutException:

@@ -250,7 +250,7 @@ def grounded_answer(message, config, data):
         frame = data.frame
         rate = float((frame.xac_suat_tre >= config['threshold']).mean())
         return f'Từ delivery_predictions.csv DataCo: {len(frame):,} dòng; tỷ lệ trễ dự báo {rate:.4%} tại ngưỡng {config["threshold"]:.6f}.', ['delivery_predictions.csv','model_config.json']
-    if any(word in q for word in ['dataco','mo hinh','smote','xgboost','feature','dac trung','tien xu ly','cap don','du bao','chia tap']):
+    if any(word in q for word in ['dataco','mo hinh','smote','xgboost','feature','dac trung','tien xu ly','chia tap']):
         count = config.get('feature_count')
         description = 'Chưa export model được chọn.' if not count else f'Model {config["model"]}; {count} feature gốc.'
         return ('Đồ án dùng DataCo Supply Chain. Notebook so sánh Logistic Regression, Random Forest và XGBoost, '
