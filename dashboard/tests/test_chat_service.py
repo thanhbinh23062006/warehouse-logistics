@@ -92,10 +92,11 @@ class ChatTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn('dự phòng', result['mode'])
             self.assertNotIn('99%', result['reply'])
 
-    async def test_refusal_and_provider_errors_are_safe(self):
+    async def test_general_answers_and_provider_errors_are_safe(self):
         result, _ = await self.call({'message': 'Dịch giúp tôi câu này'},
-            {'in_scope': False, 'reply': '', 'sources': []})
-        self.assertEqual(result['reply'], REFUSAL)
+            {'in_scope': False, 'reply': 'Hello nghĩa là xin chào. Một tuần có 7 ngày.', 'sources': []})
+        self.assertEqual(result['reply'], 'Hello nghĩa là xin chào. Một tuần có 7 ngày.')
+        self.assertEqual(result['sources'], [])
         request = httpx.Request('POST', 'https://generativelanguage.googleapis.com/test')
         response = httpx.Response(429, request=request, text='private upstream body')
         result, _ = await self.call({'message': 'Ngưỡng Youden?'},
@@ -103,6 +104,11 @@ class ChatTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('quota', result['notice'])
         self.assertNotIn('private upstream body', json.dumps(result))
         self.assertNotIn('test-only-secret', json.dumps(result))
+
+    async def test_batch_explanation_without_gemini(self):
+        result, _ = await self.call({'message': 'thế nào là dự báo hàng loạt'}, env={'GEMINI_API_KEY': ''})
+        self.assertIn('nhiều đơn hàng cùng lúc', result['reply'])
+        self.assertNotIn('Logistic', result['reply'])
 
     def test_documents_are_explicit_and_history_cannot_set_system_role(self):
         with self.assertRaises(ValueError):
