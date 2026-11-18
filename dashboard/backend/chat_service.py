@@ -66,14 +66,26 @@ def validate_history(history):
     return valid
 
 
-def dashboard_answer(message, data, threshold):
+def dashboard_answer(message, data, threshold, config=None):
     """Answer chart questions directly from the same aggregates as the dashboard."""
     import unicodedata
     q = ''.join(c for c in unicodedata.normalize('NFD', message.lower().replace('đ', 'd'))
                 if unicodedata.category(c) != 'Mn')
     if q.strip(' .!?') in ('xin chao', 'chao', 'hello', 'hi'):
         return ('Xin chào! Bạn muốn xem phân bố xác suất giao trễ, khu vực rủi ro cao hay kết quả mô hình?', [] )
-    if any(term in q for term in ('don le', 'mot don', '1 don')) and any(term in q for term in ('la gi', 'the nao', 'cach', 'huong dan')):
+    if any(term in q for term in ('dau vao', 'can nhap', 'nhap gi', 'nhung bien', 'truong bat buoc')):
+        from .schema import FIELD_DEFINITIONS
+        fields = (config or {}).get('form_fields') or FIELD_DEFINITIONS
+        required = [field['label'] for field in fields if field.get('required')]
+        optional = [field['label'] for field in fields if not field.get('required')]
+        reply = 'Thông tin đầu vào để dự báo một đơn:\n\nBắt buộc nhập:\n'
+        reply += '\n'.join('• ' + label for label in required)
+        if optional:
+            reply += '\n\nCó thể bổ sung:\n' + '\n'.join('• ' + label for label in optional)
+            reply += '\n\nNếu để trống trường tùy chọn, hệ thống dùng giá trị mặc định từ dữ liệu huấn luyện.'
+        reply += '\nChỉ nhập thông tin đã biết trước khi giao hàng.'
+        return reply, ['knowledge_context.txt']
+    if any(term in q for term in ('don le', 'mot don', '1 don')) and any(term in q for term in ('la gi', 'la sao', 'the nao', 'cach', 'huong dan')):
         return ('Dự báo đơn lẻ là ước tính nguy cơ giao hàng trễ cho một đơn hàng bạn nhập. '
                 'Bạn mở mục Dự báo 1 đơn, điền thông tin đã biết trước khi giao hàng rồi bấm Dự báo xác suất. '
                 'Kết quả gồm xác suất giao trễ và phân loại trễ hoặc không trễ theo ngưỡng đang chọn. '
@@ -245,7 +257,7 @@ async def answer_chat(payload, predictor, data, root, fallback, refusal):
     if active is not None and (type(active) not in (int, float) or not math.isfinite(active) or not 0 <= active <= 1):
         raise ValueError('Ngưỡng trò chuyện phải nằm trong khoảng 0–1.')
     fallback_config = {**config, 'threshold': active}
-    direct = dashboard_answer(message, data, active)
+    direct = dashboard_answer(message, data, active, config)
     baseline, baseline_sources = direct if direct else fallback(message, fallback_config, data)
     if baseline == refusal:
         baseline = 'Hiện tôi chưa kết nối được dịch vụ AI để trả lời câu hỏi này. Bạn vui lòng thử lại sau.'
